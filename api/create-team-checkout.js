@@ -49,6 +49,7 @@ teamName,
 captainName,
 captainEmail,
 pricingTier: pricing.tier,
+registrationType: "team",
 },
 line_items: [
 {
@@ -67,8 +68,9 @@ quantity: 1,
 
 return res.status(200).json({ url: session.url });
 } catch (err) {
+console.error("STRIPE TEAM CHECKOUT ERROR:", err);
 return res.status(500).json({
-error: err.message || "Unable to create checkout session.",
+error: err.message || "Unable to create team checkout session.",
 });
 }
 }
