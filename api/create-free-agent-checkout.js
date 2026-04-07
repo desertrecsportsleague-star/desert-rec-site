@@ -11,7 +11,9 @@ try {
 const { freeAgentId, playerName, playerEmail } = req.body || {};
 
 if (!freeAgentId || !playerName || !playerEmail) {
-return res.status(400).json({ error: "Missing required free agent checkout data." });
+return res.status(400).json({
+error: "Missing required free agent checkout data.",
+});
 }
 
 const origin =
@@ -49,7 +51,7 @@ quantity: 1,
 
 return res.status(200).json({ url: session.url });
 } catch (err) {
-console.error("FREE AGENT STRIPE CHECKOUT ERROR:", err);
+console.error("FREE AGENT CHECKOUT ERROR:", err);
 return res.status(500).json({
 error: err.message || "Unable to create free agent checkout session.",
 });
