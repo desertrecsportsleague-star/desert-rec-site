@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const supabase = createClient(
+const supabaseAdmin = createClient(
 process.env.SUPABASE_URL,
 process.env.SUPABASE_SERVICE_ROLE_KEY
 );
@@ -16,15 +16,73 @@ chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
 return Buffer.concat(chunks);
 }
 
+async function markPaymentPaid(session) {
+const metadata = session.metadata || {};
+const paymentType = metadata.paymentType || "";
+const paidAt = new Date().toISOString();
+
+const updatePayload = {
+paid_status: "Paid",
+stripe_session_id: session.id,
+paid_at: paidAt,
+};
+
+if (session.payment_intent) {
+updatePayload.stripe_payment_intent = session.payment_intent;
+}
+
+if (paymentType === "kickball_captain") {
+if (!metadata.teamId) throw new Error("Missing teamId for kickball captain payment.");
+
+const { error } = await supabaseAdmin
+.from("teams")
+.update(updatePayload)
+.eq("id", metadata.teamId);
+
+if (error) throw error;
+return;
+}
+
+if (paymentType === "kickball_roster_player") {
+if (!metadata.teamPlayerId) throw new Error("Missing teamPlayerId for roster player payment.");
+
+const { error } = await supabaseAdmin
+.from("team_players")
+.update(updatePayload)
+.eq("id", metadata.teamPlayerId);
+
+if (error) throw error;
+return;
+}
+
+if (paymentType === "kickball_free_agent" || paymentType === "softball_free_agent") {
+if (!metadata.freeAgentId) throw new Error("Missing freeAgentId for free agent payment.");
+
+const { error } = await supabaseAdmin
+.from("free_agents")
+.update(updatePayload)
+.eq("id", metadata.freeAgentId);
+
+if (error) throw error;
+return;
+}
+
+if (paymentType === "team_registration" || metadata.teamId) {
+const { error } = await supabaseAdmin
+.from("teams")
+.update(updatePayload)
+.eq("id", metadata.teamId);
+
+if (error) throw error;
+}
+}
+
 export default async function handler(req, res) {
 if (req.method !== "POST") {
-return res.status(405).json({ error: "Method not allowed" });
+return res.status(405).send("Method not allowed");
 }
 
 const signature = req.headers["stripe-signature"];
-if (!signature) {
-return res.status(400).send("Missing stripe-signature header");
-}
 
 let event;
 
@@ -35,43 +93,18 @@ rawBody,
 signature,
 process.env.STRIPE_WEBHOOK_SECRET
 );
-} catch (err) {
-console.error("Webhook verification failed:", err.message);
-return res.status(400).send(`Webhook Error: ${err.message}`);
+} catch (error) {
+console.error("Webhook signature verification failed:", error.message);
+return res.status(400).send(`Webhook Error: ${error.message}`);
 }
 
 try {
-if (
-event.type === "checkout.session.completed" ||
-event.type === "checkout.session.async_payment_succeeded"
-) {
-const session = event.data.object;
-const type = session.metadata?.registrationType;
-const teamId = session.metadata?.teamId;
-const freeAgentId = session.metadata?.freeAgentId;
-
-if (type === "team" && teamId) {
-const { error } = await supabase
-.from("teams")
-.update({ paid_status: "Paid" })
-.eq("id", teamId);
-
-if (error) throw error;
-}
-
-if (type === "free_agent" && freeAgentId) {
-const { error } = await supabase
-.from("free_agents")
-.update({ paid_status: "Paid" })
-.eq("id", freeAgentId);
-
-if (error) throw error;
-}
+if (event.type === "checkout.session.completed") {
+await markPaymentPaid(event.data.object);
 }
 
 return res.status(200).json({ received: true });
-} catch (err) {
-console.error("Webhook handler error:", err);
-return res.status(500).send(err.message || "Webhook failed");
-}
+} catch (error) {
+console.error("Webhook processing error:", error);
+return res.status(500).json({ error: error.message });
 }
