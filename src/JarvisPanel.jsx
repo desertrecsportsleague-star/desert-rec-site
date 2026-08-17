@@ -55,30 +55,52 @@ export default function JarvisPanel() {
   const [response, setResponse] = useState("Jarvis is connected to the new Desert Rec season database in read-only preview mode.");
   const [error, setError] = useState("");
 
+  async function loadSeasons() {
+    setLoading(true);
+    setError("");
+    try {
+      const { data, error: seasonError } = await supabase
+        .from("seasons")
+        .select("season_key,sport_key,name,title,status,start_date,end_date,registration_open_at,registration_close_at,day_label,location,city,team_cap,team_price_cents,free_agent_price_cents,registration_enabled")
+        .order("start_date", { ascending: false });
+      if (seasonError) throw seasonError;
+      setSeasons(data || []);
+    } catch (e) {
+      setError(e?.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function syncUser(user) {
+    const isAdmin = (user?.email || "").toLowerCase() === ADMIN_EMAIL;
+    setAllowed(isAdmin);
+    if (isAdmin) await loadSeasons();
+    else {
+      setOpen(false);
+      setLoading(false);
+      setSeasons([]);
+    }
+  }
+
   useEffect(() => {
     let mounted = true;
-    async function boot() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!mounted) return;
-        const isAdmin = (user?.email || "").toLowerCase() === ADMIN_EMAIL;
-        setAllowed(isAdmin);
-        if (!isAdmin) return;
 
-        const { data, error: seasonError } = await supabase
-          .from("seasons")
-          .select("season_key,sport_key,name,title,status,start_date,end_date,registration_open_at,registration_close_at,day_label,location,city,team_cap,team_price_cents,free_agent_price_cents,registration_enabled")
-          .order("start_date", { ascending: false });
-        if (seasonError) throw seasonError;
-        if (mounted) setSeasons(data || []);
-      } catch (e) {
-        if (mounted) setError(e?.message || String(e));
-      } finally {
-        if (mounted) setLoading(false);
-      }
+    async function boot() {
+      const { data } = await supabase.auth.getUser();
+      if (mounted) await syncUser(data?.user ?? null);
     }
+
     boot();
-    return () => { mounted = false; };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) syncUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const activeCount = useMemo(() => seasons.filter((s) => s.status === "active").length, [seasons]);
@@ -95,9 +117,10 @@ export default function JarvisPanel() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        style={{ position: "fixed", right: 18, bottom: 18, zIndex: 9998, border: 0, borderRadius: 999, padding: "13px 18px", background: "#111827", color: "white", fontWeight: 800, boxShadow: "0 10px 30px rgba(0,0,0,.25)", cursor: "pointer" }}
+        aria-label="Open Desert Rec Jarvis"
+        style={{ position: "fixed", right: 18, bottom: 18, zIndex: 9998, border: "2px solid #f59e0b", borderRadius: 999, padding: "14px 20px", background: "#111827", color: "white", fontWeight: 900, fontSize: 15, boxShadow: "0 10px 30px rgba(0,0,0,.28)", cursor: "pointer" }}
       >
-        JARVIS
+        ⚡ JARVIS
       </button>
 
       {open && (
