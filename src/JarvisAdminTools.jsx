@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
+import JarvisPanel from "./JarvisPanel.jsx";
 import JarvisWebsiteManager from "./JarvisWebsiteManager.jsx";
 import JarvisTournamentManager from "./JarvisTournamentManager.jsx";
 import JarvisScheduleManager from "./JarvisScheduleManager.jsx";
@@ -43,6 +44,7 @@ export default function JarvisAdminTools() {
   if (!allowed || !onAdminPage) return null;
 
   return <>
+    <JarvisPanel />
     <button type="button" onClick={() => setOpen(true)} style={{position:"fixed",right:18,bottom:78,zIndex:9997,border:"2px solid #f59e0b",borderRadius:999,padding:"12px 16px",background:"#fff",color:"#111827",fontWeight:900,boxShadow:"0 10px 30px rgba(0,0,0,.22)",cursor:"pointer"}}>⚙️ JARVIS ADMIN TOOLS</button>
     {open && <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.62)",padding:16,overflow:"auto"}}>
       <div style={{width:"min(1180px,100%)",margin:"20px auto",background:"#f9fafb",borderRadius:20,padding:18,boxShadow:"0 24px 70px rgba(0,0,0,.35)"}}>
