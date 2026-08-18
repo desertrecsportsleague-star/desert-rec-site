@@ -77,13 +77,14 @@ export default function JarvisWebsiteManager() {
       const rows = Object.entries(content).map(([key, value]) => ({ key, value, updated_at: new Date().toISOString(), updated_by: user?.id || null }));
       const { error } = await supabase.from("site_content").upsert(rows, { onConflict: "key" });
       if (error) throw error;
-      setMessage("Homepage content saved. It is ready for the dynamic homepage preview.");
+      setMessage("Homepage content saved. Preview homepage will update automatically.");
     } catch (e) { setMessage(`Save failed: ${e?.message || e}`); } finally { setBusy(false); }
   }
 
   async function toggleFeatured(item) {
     const { error } = await supabase.from("media_assets").update({ featured_home: !item.featured_home, updated_at: new Date().toISOString() }).eq("id", item.id);
     if (error) return setMessage(error.message);
+    setMessage(!item.featured_home ? "Photo featured. Preview homepage will update automatically." : "Photo removed from homepage feature rotation.");
     await load();
   }
 
@@ -111,7 +112,7 @@ export default function JarvisWebsiteManager() {
       <label style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" checked={featured} onChange={e=>setFeatured(e.target.checked)}/> Feature on homepage</label>
     </div>
     <input id="jarvis-media-files" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onChange={e=>setFiles(Array.from(e.target.files || []))} style={{marginTop:10}}/>
-    <div style={{fontSize:13,color:"#6b7280",marginTop:4}}>{files.length ? `${files.length} photo(s) selected` : "JPEG, PNG, WebP, HEIC · up to 10 MB each"}</div>
+    <div style={{fontSize:13,color:"#6b7280",marginTop:4}}>{files.length ? `${files.length} photo(s) selected` : "JPEG, PNG, WebP, HEIC · up to 50 MB each"}</div>
     <button disabled={busy || !files.length} onClick={uploadPhotos} style={{marginTop:10,padding:"10px 14px",background:"#f59e0b",border:0,borderRadius:10,fontWeight:900}}>{busy ? "Working…" : "Upload Photos"}</button>
 
     <hr style={{margin:"22px 0",border:0,borderTop:"1px solid #e5e7eb"}}/>
