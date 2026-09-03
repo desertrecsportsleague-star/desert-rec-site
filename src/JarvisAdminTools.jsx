@@ -4,61 +4,7 @@ import JarvisPanel from "./JarvisPanel.jsx";
 import JarvisWebsiteManager from "./JarvisWebsiteManager.jsx";
 import JarvisTournamentManager from "./JarvisTournamentManager.jsx";
 import JarvisScheduleManager from "./JarvisScheduleManager.jsx";
-
-const ADMIN_EMAIL = "desertrecsportsleague@gmail.com";
-
-function isAdminPageVisible() {
-  const text = document.body?.innerText || "";
-  return text.includes("Admin Dashboard") || text.includes("Current Softball Manual Schedule Control");
-}
-
-export default function JarvisAdminTools() {
-  const [allowed, setAllowed] = useState(false);
-  const [onAdminPage, setOnAdminPage] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState("media");
-
-  useEffect(() => {
-    let mounted = true;
-    async function sync(user) {
-      if (!mounted) return;
-      const ok = (user?.email || "").toLowerCase() === ADMIN_EMAIL;
-      setAllowed(ok);
-      if (!ok) setOpen(false);
-    }
-    supabase.auth.getUser().then(({ data }) => sync(data?.user || null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => sync(session?.user || null));
-
-    const checkPage = () => mounted && setOnAdminPage(isAdminPageVisible());
-    checkPage();
-    const observer = new MutationObserver(checkPage);
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-      observer.disconnect();
-    };
-  }, []);
-
-  if (!allowed || !onAdminPage) return null;
-
-  return <>
-    <JarvisPanel />
-    <button type="button" onClick={() => setOpen(true)} style={{position:"fixed",right:18,bottom:78,zIndex:9997,border:"2px solid #f59e0b",borderRadius:999,padding:"12px 16px",background:"#fff",color:"#111827",fontWeight:900,boxShadow:"0 10px 30px rgba(0,0,0,.22)",cursor:"pointer"}}>⚙️ JARVIS ADMIN TOOLS</button>
-    {open && <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.62)",padding:16,overflow:"auto"}}>
-      <div style={{width:"min(1180px,100%)",margin:"20px auto",background:"#f9fafb",borderRadius:20,padding:18,boxShadow:"0 24px 70px rgba(0,0,0,.35)"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-          <div><div style={{fontSize:12,fontWeight:900,color:"#b45309",letterSpacing:1}}>DESERT REC ADMIN ONLY</div><h2 style={{margin:"4px 0"}}>Jarvis Admin Tools</h2><p style={{margin:0,color:"#6b7280"}}>These controls are only available while signed into the admin dashboard.</p></div>
-          <button onClick={()=>setOpen(false)} style={{padding:"9px 13px",borderRadius:10,border:"1px solid #d1d5db",background:"white"}}>Close</button>
-        </div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"16px 0"}}>
-          {[["media","Website + Photos"],["tournament","Tournaments"],["schedule","Scheduling"]].map(([key,label])=><button key={key} onClick={()=>setTab(key)} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #d1d5db",background:tab===key?"#111827":"white",color:tab===key?"white":"#111827",fontWeight:800}}>{label}</button>)}
-        </div>
-        {tab === "media" && <JarvisWebsiteManager />}
-        {tab === "tournament" && <JarvisTournamentManager />}
-        {tab === "schedule" && <JarvisScheduleManager />}
-      </div>
-    </div>}
-  </>;
-}
+import JarvisFallSoftballAdmin from "./JarvisFallSoftballAdmin.jsx";
+const ADMIN_EMAIL="desertrecsportsleague@gmail.com";
+function isAdminPageVisible(){const text=document.body?.innerText||"";return text.includes("Admin Dashboard")||text.includes("Current Softball Manual Schedule Control")}
+export default function JarvisAdminTools(){const[allowed,setAllowed]=useState(false),[onAdminPage,setOnAdminPage]=useState(false),[open,setOpen]=useState(false),[tab,setTab]=useState("fall");useEffect(()=>{let mounted=true;async function sync(user){if(!mounted)return;const ok=(user?.email||"").toLowerCase()===ADMIN_EMAIL;setAllowed(ok);if(!ok)setOpen(false)}supabase.auth.getUser().then(({data})=>sync(data?.user||null));const{data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>sync(s?.user||null));const check=()=>mounted&&setOnAdminPage(isAdminPageVisible());check();const observer=new MutationObserver(check);observer.observe(document.body,{childList:true,subtree:true,characterData:true});return()=>{mounted=false;subscription.unsubscribe();observer.disconnect()}},[]);if(!allowed||!onAdminPage)return null;return <><JarvisPanel/><button type="button" onClick={()=>setOpen(true)} style={{position:"fixed",right:18,bottom:78,zIndex:9997,border:"2px solid #f59e0b",borderRadius:999,padding:"12px 16px",background:"#fff",color:"#111827",fontWeight:900,boxShadow:"0 10px 30px rgba(0,0,0,.22)",cursor:"pointer"}}>⚙️ JARVIS ADMIN TOOLS</button>{open&&<div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.62)",padding:16,overflow:"auto"}}><div style={{width:"min(1180px,100%)",margin:"20px auto",background:"#f9fafb",borderRadius:20,padding:18,boxShadow:"0 24px 70px rgba(0,0,0,.35)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}><div><div style={{fontSize:12,fontWeight:900,color:"#b45309",letterSpacing:1}}>DESERT REC ADMIN ONLY</div><h2 style={{margin:"4px 0"}}>Jarvis Admin Tools</h2><p style={{margin:0,color:"#6b7280"}}>Manage Fall Softball, website content, tournaments and scheduling.</p></div><button onClick={()=>setOpen(false)}>Close</button></div><div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"16px 0"}}>{[["fall","🍂 Fall Softball"],["media","Website + Photos"],["tournament","Tournaments"],["schedule","Scheduling"]].map(([key,label])=><button key={key} onClick={()=>setTab(key)} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #d1d5db",background:tab===key?"#111827":"white",color:tab===key?"white":"#111827",fontWeight:800}}>{label}</button>)}</div>{tab==="fall"&&<JarvisFallSoftballAdmin/>}{tab==="media"&&<JarvisWebsiteManager/>}{tab==="tournament"&&<JarvisTournamentManager/>}{tab==="schedule"&&<JarvisScheduleManager/>}</div></div>}</>}
