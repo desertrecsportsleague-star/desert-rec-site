@@ -35,7 +35,7 @@ const LEAGUES = {
     regularFreeAgentPrice: 60,
     teamPricing: true,
   },
-  softballSummer: {
+  softballFall: {\n    key: "softballFall",\n    dataLeague: "softball",\n    seasonKey: "softball_fall_softball_19578",\n    name: "Fall Softball 2026",\n    title: "Sunday Night Coed Softball - Fall 2026",\n    night: "Sunday Nights",\n    location: "Earl Edgar Park Fields 1 & 2",\n    city: "Buckeye, Arizona",\n    teamCap: 8,\n    rosterTarget: "7 Men / 3 Women",\n    freeAgentPrice: 65,\n    regularFreeAgentPrice: 65,\n    teamPricing: true,\n  },\n  softballSummer: {
     key: "softballSummer",
     dataLeague: "softball",
     seasonKey: "softball_summer_2026",
@@ -83,7 +83,7 @@ const SEASONS = {
     title: "Softball Summer Season",
     startDate: "2026-07-16",
   },
-  kickball_summer_2026: {
+  softball_fall_softball_19578: {\n    key: "softball_fall_softball_19578",\n    leagueType: "softball",\n    label: "Fall Softball 2026",\n    title: "Fall Sunday Softball",\n    startDate: "2026-09-20",\n  },\n  kickball_summer_2026: {
     key: "kickball_summer_2026",
     leagueType: "kickball",
     label: "Kickball Summer 2026",
@@ -999,7 +999,7 @@ export default function App() {
         }
       `}</style>
 
-      <div className="nav"><button onClick={() => setPage("home")}>Home</button><button onClick={() => setPage("kickball")}>Kickball</button><button onClick={() => openRegistrationForLeague("softball")}>Softball Register</button><button onClick={() => openRegistrationForLeague("kickball")}>Kickball Register</button><button onClick={() => setPage("rules")}>Rules</button><button onClick={() => setPage("schedule")}>Schedule</button><button onClick={() => { window.location.href="/fall-softball-schedule"; }}>Fall Softball Schedule</button><button onClick={() => setPage("standings")}>Standings</button><button onClick={() => setPage("playoffs")}>Playoffs</button><button onClick={() => setPage("leaderboard")}>Leaderboard</button><button onClick={() => setPage("waiver")}>Waiver</button><button onClick={() => setPage("admin")}>Admin</button></div>
+      <div className="nav"><button onClick={() => setPage("home")}>Home</button><button onClick={() => setPage("kickball")}>Kickball</button><button onClick={() => openRegistrationForLeague("softball")}>Softball Register</button><button onClick={() => openRegistrationForLeague("kickball")}>Kickball Register</button><button onClick={() => setPage("rules")}>Rules</button><button onClick={() => setPage("schedule")}>Schedule</button><button onClick={() => { window.location.href="/fall-softball-schedule"; }}>Fall Softball Schedule</button><button onClick={() => { window.location.href="/fall-softball-schedule"; }}>Fall Softball Schedule</button><button onClick={() => setPage("standings")}>Standings</button><button onClick={() => setPage("playoffs")}>Playoffs</button><button onClick={() => setPage("leaderboard")}>Leaderboard</button><button onClick={() => setPage("waiver")}>Waiver</button><button onClick={() => setPage("admin")}>Admin</button></div>
 
       {page === "home" && (
         <div className="page home-page">
