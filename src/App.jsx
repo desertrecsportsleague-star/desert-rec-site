@@ -35,7 +35,22 @@ const LEAGUES = {
     regularFreeAgentPrice: 60,
     teamPricing: true,
   },
-  softballFall: {\n    key: "softballFall",\n    dataLeague: "softball",\n    seasonKey: "softball_fall_softball_19578",\n    name: "Fall Softball 2026",\n    title: "Sunday Night Coed Softball - Fall 2026",\n    night: "Sunday Nights",\n    location: "Earl Edgar Park Fields 1 & 2",\n    city: "Buckeye, Arizona",\n    teamCap: 8,\n    rosterTarget: "7 Men / 3 Women",\n    freeAgentPrice: 65,\n    regularFreeAgentPrice: 65,\n    teamPricing: true,\n  },\n  softballSummer: {
+  softballFall: {
+    key: "softballFall",
+    dataLeague: "softball",
+    seasonKey: "softball_fall_softball_19578",
+    name: "Fall Softball 2026",
+    title: "Sunday Night Coed Softball - Fall 2026",
+    night: "Sunday Nights",
+    location: "Earl Edgar Park Fields 1 & 2",
+    city: "Buckeye, Arizona",
+    teamCap: 8,
+    rosterTarget: "7 Men / 3 Women",
+    freeAgentPrice: 65,
+    regularFreeAgentPrice: 65,
+    teamPricing: true,
+  },
+  softballSummer: {
     key: "softballSummer",
     dataLeague: "softball",
     seasonKey: "softball_summer_2026",
@@ -83,7 +98,14 @@ const SEASONS = {
     title: "Softball Summer Season",
     startDate: "2026-07-16",
   },
-  softball_fall_softball_19578: {\n    key: "softball_fall_softball_19578",\n    leagueType: "softball",\n    label: "Fall Softball 2026",\n    title: "Fall Sunday Softball",\n    startDate: "2026-09-20",\n  },\n  kickball_summer_2026: {
+  softball_fall_softball_19578: {
+    key: "softball_fall_softball_19578",
+    leagueType: "softball",
+    label: "Fall Softball 2026",
+    title: "Fall Sunday Softball",
+    startDate: "2026-09-20",
+  },
+  kickball_summer_2026: {
     key: "kickball_summer_2026",
     leagueType: "kickball",
     label: "Kickball Summer 2026",
