@@ -727,20 +727,25 @@ export default function App() {
 
   const softballStandings = computeStandings(teams.filter((t) => t.leagueType === "softball" && t.seasonKey === "softball_spring_2026"), schedule.filter((g) => g.leagueType === "softball" && g.seasonKey === "softball_spring_2026"));
   const softballSummerStandings = computeStandings(teams.filter((t) => t.leagueType === "softball" && t.seasonKey === "softball_summer_2026"), schedule.filter((g) => g.leagueType === "softball" && g.seasonKey === "softball_summer_2026"));
+  const fallSoftballStandings = computeStandings(teams.filter((t) => t.leagueType === "softball" && t.seasonKey === "softball_fall_softball_19578"), schedule.filter((g) => g.leagueType === "softball" && g.seasonKey === "softball_fall_softball_19578"));
   const kickballStandings = computeStandings(teams.filter((t) => t.leagueType === "kickball" && t.seasonKey === "kickball_summer_2026"), schedule.filter((g) => g.leagueType === "kickball" && g.seasonKey === "kickball_summer_2026"));
   const selectedStandings =
     standingsLeague === "softball"
       ? softballStandings
-      : standingsLeague === "kickball"
-        ? kickballStandings
-        : softballSummerStandings;
+      : standingsLeague === "softballFall"
+        ? fallSoftballStandings
+        : standingsLeague === "kickball"
+          ? kickballStandings
+          : softballSummerStandings;
 
   const selectedStandingsTitle =
     standingsLeague === "softball"
       ? "Current Softball"
-      : standingsLeague === "kickball"
-        ? "Kickball"
-        : "Summer Softball";
+      : standingsLeague === "softballFall"
+        ? "Fall Softball 2026"
+        : standingsLeague === "kickball"
+          ? "Kickball"
+          : "Summer Softball";
   const homeSummerSoftballTeams = teams.filter(
     (team) => team.leagueType === "softball" && team.seasonKey === "softball_summer_2026"
   );
@@ -1158,6 +1163,7 @@ export default function App() {
               <select value={standingsLeague} onChange={(e) => setStandingsLeague(e.target.value)}>
                 <option value="softball">Current Softball</option>
                 <option value="softballSummer">Summer Softball</option>
+                <option value="softballFall">Fall Softball 2026</option>
                 <option value="kickball">Kickball</option>
               </select>
             </label>
