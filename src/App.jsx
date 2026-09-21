@@ -315,7 +315,7 @@ function generateRoundRobinSchedule(teamObjects) {
 
 function computeStandings(teams, schedule) {
   const map = new Map();
-  teams.filter((t) => t.paidStatus === "Paid").forEach((t) => map.set(t.id, { teamId: t.id, teamName: t.teamName, wins: 0, losses: 0, ties: 0, runsFor: 0, runsAgainst: 0, differential: 0, gamesPlayed: 0 }));
+  teams.filter((t) => String(t.paidStatus || "").toLowerCase() === "paid").forEach((t) => map.set(t.id, { teamId: t.id, teamName: t.teamName, wins: 0, losses: 0, ties: 0, runsFor: 0, runsAgainst: 0, differential: 0, gamesPlayed: 0 }));
   schedule.forEach((g) => {
     const hs = safeNumber(g.homeScore); const as = safeNumber(g.awayScore);
     if (!g.homeTeamId || !g.awayTeamId || hs === null || as === null) return;
