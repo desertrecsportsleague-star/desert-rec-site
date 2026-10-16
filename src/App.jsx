@@ -951,6 +951,9 @@ export default function App() {
         .primary { background: #f59e0b; border-color: #f59e0b; color: #111; font-weight: 700; }
         .pill, .promo-tag { display: inline-block; background: rgba(255,247,234,.95); border: 1px solid #f0dbb8; border-radius: 999px; padding: 8px 12px; font-weight: 700; margin-right: 8px; margin-bottom: 8px; color: #4a3420; }
         .section-title { margin: 0 0 8px; font-size: 34px; }
+        .tournament-page > .section-title { color: #211b17 !important; text-shadow: none !important; font-weight: 800; line-height: 1.18; }
+        .tournament-page > .section-subtitle { color: #51483f !important; }
+        @media (max-width: 600px) { .tournament-page > .section-title { font-size: 29px; } }
         .section-subtitle { margin: 0 0 20px; color: #5e554d; line-height: 1.7; }
         .waiverPre { white-space: pre-wrap; margin: 0; font-family: inherit; line-height: 1.7; }
         .home-page { max-width: 1280px; }
@@ -1147,7 +1150,7 @@ export default function App() {
         </div>
       )}
 
-      {page === "tournament" && <div className="page"><h2 className="section-title">November 7 Tournament Registration</h2><p className="section-subtitle">Sundance Park, Buckeye • 18+ • 3 games guaranteed • 8 teams per sport</p><div className="card" style={{maxWidth:700,margin:"0 auto"}}><form onSubmit={submitTournament} style={{display:"grid",gap:12}}>
+      {page === "tournament" && <div className="page tournament-page"><h2 className="section-title">November 7 Tournament Registration</h2><p className="section-subtitle">Sundance Park, Buckeye • 18+ • 3 games guaranteed • 8 teams per sport</p><div className="card" style={{maxWidth:700,margin:"0 auto"}}><form onSubmit={submitTournament} style={{display:"grid",gap:12}}>
 <label>Choose your tournament (required)<select required value={tournamentForm.sport} onChange={e=>setTournamentForm(p=>({...p,sport:e.target.value}))}><option value="">Select softball or kickball</option><option value="softball">Softball — $450 per team</option><option value="kickball">Kickball — $350 per team</option></select></label>
 <input required maxLength={100} placeholder="Team name" value={tournamentForm.teamName} onChange={e=>setTournamentForm(p=>({...p,teamName:e.target.value}))}/>
 <input required maxLength={100} placeholder="Captain full name" value={tournamentForm.captainName} onChange={e=>setTournamentForm(p=>({...p,captainName:e.target.value}))}/>
