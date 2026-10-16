@@ -31,6 +31,20 @@ if (session.payment_intent) {
 updatePayload.stripe_payment_intent = session.payment_intent;
 }
 
+if (paymentType === "tournament_team") {
+ if (!metadata.registrationId) throw new Error("Missing tournament registration ID.");
+ const {data:registration,error:lookupError}=await supabaseAdmin.from("tournament_registrations").select("id,stripe_checkout_session_id,payment_status").eq("id",metadata.registrationId).single();
+ if(lookupError||!registration)throw new Error("Tournament registration not found.");
+ if(registration.stripe_checkout_session_id!==session.id)throw new Error("Tournament Stripe session mismatch.");
+ if(registration.payment_status==="paid")return;
+ const { error } = await supabaseAdmin.from("tournament_registrations").update({
+  payment_status: "paid", status: "confirmed", stripe_checkout_session_id: session.id,
+  stripe_session_id: session.id, stripe_payment_intent: session.payment_intent || null, paid_at: paidAt
+ }).eq("id", metadata.registrationId);
+ if (error) throw error;
+ return;
+}
+
 if (paymentType === "kickball_captain") {
 if (!metadata.teamId) throw new Error("Missing teamId for kickball captain payment.");
 
@@ -99,7 +113,7 @@ return res.status(400).send(`Webhook Error: ${error.message}`);
 }
 
 try {
-if (event.type === "checkout.session.completed") {
+if (event.type === "checkout.session.completed" && event.data.object.payment_status === "paid") {
 await markPaymentPaid(event.data.object);
 }
 
