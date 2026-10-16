@@ -9,7 +9,9 @@ export default async function handler(req,res) {
  if(req.method!=="POST") return res.status(405).json({error:"Method not allowed"});
  try {
   const {sport,teamName,captainName,captainEmail,captainPhone,signature,waiverAccepted,captainDutyAccepted,electronicAccepted}=req.body||{};
-  const event=EVENTS[sport];
+  const isPreview=process.env.VERCEL_ENV==="preview";
+  if(isPreview&&!process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_"))return res.status(503).json({error:"Preview Stripe test key is not configured."});
+  const event=EVENTS[sport]?{...EVENTS[sport],key:EVENTS[sport].key+(isPreview?"_test":"")}:null;
   if(!event || ![teamName,captainName,captainEmail,signature].every(v=>typeof v==="string"&&v.trim()) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(captainEmail) || !waiverAccepted || !captainDutyAccepted || !electronicAccepted) return res.status(400).json({error:"Complete all required fields and waiver agreements."});
   const {data:tournament,error:tournamentError}=await db.from("tournaments").select("registration_enabled,status,entry_fee_cents,team_cap").eq("tournament_key",event.key).single();
   if(tournamentError) throw tournamentError;
@@ -17,9 +19,9 @@ export default async function handler(req,res) {
   const {data:registrationId,error:reserveError}=await db.rpc("reserve_tournament_team",{p_tournament_key:event.key,p_team_name:teamName.trim(),p_captain_name:captainName.trim(),p_captain_email:captainEmail.trim(),p_captain_phone:captainPhone||null});
   if(reserveError)return res.status(409).json({error:reserveError.message.includes("full")?"This tournament is full.":"Registration is not currently available."});
   const registration={id:registrationId};
-  const origin="https://desertrecsportsleague.com";
+  const origin=isPreview?("https://"+process.env.VERCEL_URL):"https://desertrecsportsleague.com";
   let session;
-  try { session=await stripe.checkout.sessions.create({mode:"payment",customer_email:captainEmail.trim(),line_items:[{price_data:{currency:"usd",unit_amount:tournament.entry_fee_cents,product_data:{name:event.name}},quantity:1}],success_url:origin+"/?tournament_payment=success",cancel_url:origin+"/?tournament_payment=cancelled",metadata:{paymentType:"tournament_team",registrationId:registration.id,tournamentKey:event.key,sport,signature:signature.trim()}}); }
+  try { session=await stripe.checkout.sessions.create({mode:"payment",customer_email:captainEmail.trim(),line_items:[{price_data:{currency:"usd",unit_amount:tournament.entry_fee_cents,product_data:{name:event.name}},quantity:1}],success_url:origin+"/?tournament_payment=success",cancel_url:origin+"/?tournament_payment=cancelled",metadata:{paymentType:"tournament_team",registrationId:registration.id,tournamentKey:event.key,sport}}); }
   catch(checkoutError){await db.from("tournament_registrations").update({status:"cancelled"}).eq("id",registration.id);throw checkoutError;}
   const {error:sessionSaveError}=await db.from("tournament_registrations").update({stripe_checkout_session_id:session.id,stripe_session_id:session.id}).eq("id",registration.id);
   if(sessionSaveError){await stripe.checkout.sessions.expire(session.id);await db.from("tournament_registrations").update({status:"cancelled"}).eq("id",registration.id);throw sessionSaveError;}
