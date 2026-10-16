@@ -31,6 +31,16 @@ if (session.payment_intent) {
 updatePayload.stripe_payment_intent = session.payment_intent;
 }
 
+if (paymentType === "tournament_team") {
+ if (!metadata.registrationId) throw new Error("Missing tournament registration ID.");
+ const { error } = await supabaseAdmin.from("tournament_registrations").update({
+  payment_status: "paid", status: "confirmed", stripe_checkout_session_id: session.id,
+  stripe_session_id: session.id, stripe_payment_intent: session.payment_intent || null, paid_at: paidAt
+ }).eq("id", metadata.registrationId);
+ if (error) throw error;
+ return;
+}
+
 if (paymentType === "kickball_captain") {
 if (!metadata.teamId) throw new Error("Missing teamId for kickball captain payment.");
 
