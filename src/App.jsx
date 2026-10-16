@@ -328,6 +328,19 @@ function computeStandings(teams, schedule) {
 
 export default function App() {
   const [page, setPage] = useState("home");
+  const [tournamentForm,setTournamentForm]=useState({sport:"",teamName:"",captainName:"",captainEmail:"",captainPhone:"",signature:"",waiverAccepted:false,captainDutyAccepted:false,electronicAccepted:false});
+  const [tournamentLoading,setTournamentLoading]=useState(false);
+  async function submitTournament(e) {
+    e.preventDefault();
+    if(tournamentLoading)return;
+    setTournamentLoading(true);
+    try {
+      const response=await fetch("/api/tournament-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(tournamentForm)});
+      const result=await response.json();
+      if(!response.ok)throw new Error(result.error||"Checkout unavailable.");
+      window.location.assign(result.url);
+    } catch(error){alert(error.message);} finally {setTournamentLoading(false);}
+  }
   const [standingsLeague, setStandingsLeague] = useState("softballSummer");
   const [registrationLeague, setRegistrationLeague] = useState("softball");
   const [registrationSeason, setRegistrationSeason] = useState("softball_summer_2026");
@@ -1027,7 +1040,7 @@ export default function App() {
         }
       `}</style>
 
-      <div className="nav"><button onClick={() => setPage("home")}>Home</button><button onClick={() => setPage("kickball")}>Kickball</button><button onClick={() => openRegistrationForLeague("softball")}>Softball Register</button><button onClick={() => openRegistrationForLeague("kickball")}>Kickball Register</button><button onClick={() => setPage("rules")}>Rules</button><button onClick={() => setPage("schedule")}>Schedule</button><button onClick={() => setPage("standings")}>Standings</button><button onClick={() => setPage("playoffs")}>Playoffs</button><button onClick={() => setPage("leaderboard")}>Leaderboard</button><button onClick={() => setPage("waiver")}>Waiver</button><button onClick={() => setPage("admin")}>Admin</button></div>
+      <div className="nav"><button onClick={() => setPage("home")}>Home</button><button onClick={() => setPage("kickball")}>Kickball</button><button onClick={() => openRegistrationForLeague("softball")}>Softball Register</button><button onClick={() => openRegistrationForLeague("kickball")}>Kickball Register</button><button onClick={() => setPage("rules")}>Rules</button><button onClick={() => setPage("schedule")}>Schedule</button><button onClick={() => setPage("standings")}>Standings</button><button onClick={() => setPage("playoffs")}>Playoffs</button><button onClick={() => setPage("leaderboard")}>Leaderboard</button><button onClick={() => setPage("waiver")}>Waiver</button><button onClick={() => setPage("tournament")}>Tournament Register</button><button onClick={() => setPage("admin")}>Admin</button></div>
 
       {page === "home" && (
         <div className="page home-page">
@@ -1134,7 +1147,22 @@ export default function App() {
         </div>
       )}
 
-      {page === "kickball" && <div className="page"><h2 className="section-title">Coed Kickball League</h2><p className="section-subtitle">Desert Rec Sports League kickball is built to be fun, social, and competitive. Bring a team or sign up as a free agent and we will help place you on a team.</p><div className="grid2"><div className="card"><h3>Kickball League Info</h3><ul><li>Format: Adult coed recreational kickball</li><li>Location: Sundance Park in Buckeye</li><li>League Night: Sunday evenings</li><li>Roster Target: 6 men / 4 women</li><li>Free Agent Early Registration: $60/person</li><li>Regular Registration: $65/person</li><li>Teams and free agents welcome</li></ul><div className="row" style={{ marginTop: 14 }}><button className="primary" onClick={() => openRegistrationForLeague("kickball")}>Register for Kickball</button><button onClick={() => setPage("kickballRules")}>View Kickball Rules</button></div></div><div className="card"><h3>Kickball Schedule Preview</h3><p>Schedule will be posted once enough teams and free agents are registered. Admin can generate and manage the kickball schedule separately from softball.</p><button onClick={() => setPage("kickballSchedule")}>View Kickball Schedule</button></div></div><div className="card"><h3>Kickball Waiver</h3><p>Kickball uses the same Desert Rec Sports League waiver as softball. All rostered players and substitutes must sign before playing.</p><button onClick={() => setPage("waiver")}>View Waiver</button></div></div>}
+      {page === "tournament" && <div className="page"><h2 className="section-title">November 7 Tournament Registration</h2><p className="section-subtitle">Sundance Park, Buckeye • 18+ • 3 games guaranteed • 8 teams per sport</p><div className="card" style={{maxWidth:700,margin:"0 auto"}}><form onSubmit={submitTournament} style={{display:"grid",gap:12}}>
+<label>Choose your tournament (required)<select required value={tournamentForm.sport} onChange={e=>setTournamentForm(p=>({...p,sport:e.target.value}))}><option value="">Select softball or kickball</option><option value="softball">Softball — $450 per team</option><option value="kickball">Kickball — $350 per team</option></select></label>
+<input required maxLength={100} placeholder="Team name" value={tournamentForm.teamName} onChange={e=>setTournamentForm(p=>({...p,teamName:e.target.value}))}/>
+<input required maxLength={100} placeholder="Captain full name" value={tournamentForm.captainName} onChange={e=>setTournamentForm(p=>({...p,captainName:e.target.value}))}/>
+<input required type="email" placeholder="Captain email" value={tournamentForm.captainEmail} onChange={e=>setTournamentForm(p=>({...p,captainEmail:e.target.value}))}/>
+<input required type="tel" placeholder="Captain phone" value={tournamentForm.captainPhone} onChange={e=>setTournamentForm(p=>({...p,captainPhone:e.target.value}))}/>
+<p>Every player, including substitutes, must sign a player waiver before participating. The captain is responsible for ensuring this is completed.</p>
+<textarea readOnly value={fullWaiverText} rows={7}/>
+<input required placeholder="Type full legal name as electronic signature" value={tournamentForm.signature} onChange={e=>setTournamentForm(p=>({...p,signature:e.target.value}))}/>
+<label><input required type="checkbox" checked={tournamentForm.waiverAccepted} onChange={e=>setTournamentForm(p=>({...p,waiverAccepted:e.target.checked}))}/> I have read and agree to the waiver.</label>
+<label><input required type="checkbox" checked={tournamentForm.captainDutyAccepted} onChange={e=>setTournamentForm(p=>({...p,captainDutyAccepted:e.target.checked}))}/> I accept responsibility for all player and substitute waivers.</label>
+<label><input required type="checkbox" checked={tournamentForm.electronicAccepted} onChange={e=>setTournamentForm(p=>({...p,electronicAccepted:e.target.checked}))}/> I agree to sign electronically.</label>
+<button type="submit" disabled={tournamentLoading||!tournamentForm.sport}>{tournamentLoading?"Opening secure checkout...":tournamentForm.sport==="softball"?"Pay $450 — Softball":tournamentForm.sport==="kickball"?"Pay $350 — Kickball":"Select tournament to continue"}</button>
+<p>Registration is confirmed only after successful Stripe payment. Player waivers are required before playing.</p>
+</form></div></div>}
+        {page === "kickball" && <div className="page"><h2 className="section-title">Coed Kickball League</h2><p className="section-subtitle">Desert Rec Sports League kickball is built to be fun, social, and competitive. Bring a team or sign up as a free agent and we will help place you on a team.</p><div className="grid2"><div className="card"><h3>Kickball League Info</h3><ul><li>Format: Adult coed recreational kickball</li><li>Location: Sundance Park in Buckeye</li><li>League Night: Sunday evenings</li><li>Roster Target: 6 men / 4 women</li><li>Free Agent Early Registration: $60/person</li><li>Regular Registration: $65/person</li><li>Teams and free agents welcome</li></ul><div className="row" style={{ marginTop: 14 }}><button className="primary" onClick={() => openRegistrationForLeague("kickball")}>Register for Kickball</button><button onClick={() => setPage("kickballRules")}>View Kickball Rules</button></div></div><div className="card"><h3>Kickball Schedule Preview</h3><p>Schedule will be posted once enough teams and free agents are registered. Admin can generate and manage the kickball schedule separately from softball.</p><button onClick={() => setPage("kickballSchedule")}>View Kickball Schedule</button></div></div><div className="card"><h3>Kickball Waiver</h3><p>Kickball uses the same Desert Rec Sports League waiver as softball. All rostered players and substitutes must sign before playing.</p><button onClick={() => setPage("waiver")}>View Waiver</button></div></div>}
 
       {page === "register" && <div className="page"><h2 className="section-title">{activeRegistrationLeague.name} Registration</h2><p className="section-subtitle">Secure your spot for the {activeRegistrationLeague.title} at {activeRegistrationLeague.location}.</p><div className="league-switch"><button className={registrationDataLeague === "softball" ? "active" : ""} onClick={() => setRegistrationLeague("softball")}>Current Softball</button><button className={registrationLeague === "softballSummer" ? "active" : ""} onClick={() => setRegistrationLeague("softballSummer")}>New Softball - July 16</button><button className={registrationLeague === "kickball" ? "active" : ""} onClick={() => setRegistrationLeague("kickball")}>Kickball Registration</button></div><div className="card"><strong>{activeRegistrationLeague.name}</strong><div>Captains can create their team and add players to the roster.</div><div>Players can return to this page, search by team name, select their name, and sign the waiver.</div><div>Team payments are handled separately by invoice.</div>{teamSpotsFull && <div style={{ marginTop: 8, fontWeight: 700, color: "#991b1b" }}>{activeRegistrationLeague.name} team registration is closed. All {activeRegistrationLeague.teamCap} spots are filled.</div>}</div>
 
