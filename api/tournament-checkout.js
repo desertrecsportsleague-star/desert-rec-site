@@ -21,7 +21,8 @@ export default async function handler(req,res) {
   let session;
   try { session=await stripe.checkout.sessions.create({mode:"payment",customer_email:captainEmail.trim(),line_items:[{price_data:{currency:"usd",unit_amount:tournament.entry_fee_cents,product_data:{name:event.name}},quantity:1}],success_url:origin+"/?tournament_payment=success",cancel_url:origin+"/?tournament_payment=cancelled",metadata:{paymentType:"tournament_team",registrationId:registration.id,tournamentKey:event.key,sport,signature:signature.trim()}}); }
   catch(checkoutError){await db.from("tournament_registrations").update({status:"cancelled"}).eq("id",registration.id);throw checkoutError;}
-  await db.from("tournament_registrations").update({stripe_checkout_session_id:session.id,stripe_session_id:session.id}).eq("id",registration.id);
+  const {error:sessionSaveError}=await db.from("tournament_registrations").update({stripe_checkout_session_id:session.id,stripe_session_id:session.id}).eq("id",registration.id);
+  if(sessionSaveError){await stripe.checkout.sessions.expire(session.id);await db.from("tournament_registrations").update({status:"cancelled"}).eq("id",registration.id);throw sessionSaveError;}
   return res.status(200).json({url:session.url});
  } catch(err) {console.error("Tournament checkout failed",err);return res.status(500).json({error:"Unable to start checkout. Please try again."});}
 }
