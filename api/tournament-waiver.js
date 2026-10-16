@@ -1,6 +1,6 @@
 import {createClient} from "@supabase/supabase-js";
 const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY);
-const KEYS=["nov7_2026_softball","nov7_2026_kickball"];
+const KEYS=process.env.VERCEL_ENV==="preview"?["nov7_2026_softball_test","nov7_2026_kickball_test"]:["nov7_2026_softball","nov7_2026_kickball"];
 export default async function handler(req,res){
  try {
   if(req.method==="GET"){
