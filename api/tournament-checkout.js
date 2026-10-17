@@ -16,6 +16,11 @@ export default async function handler(req,res) {
   const {data:tournament,error:tournamentError}=await db.from("tournaments").select("registration_enabled,status,entry_fee_cents,team_cap").eq("tournament_key",event.key).single();
   if(tournamentError) throw tournamentError;
   if(!tournament.registration_enabled || tournament.status==="draft") return res.status(403).json({error:"Registration is not open yet."});
+  if(sport==="kickball"&&!isPreview){
+   const {data:registrationId,error:registrationError}=await db.rpc("register_kickball_team_pay_later",{p_team_name:teamName.trim(),p_captain_name:captainName.trim(),p_captain_email:captainEmail.trim(),p_captain_phone:captainPhone||""});
+   if(registrationError)return res.status(409).json({error:registrationError.message.includes("full")?"Kickball registration is full.":registrationError.message.includes("already registered")?"This team is already registered.":"Unable to register this team. Please try again."});
+   return res.status(200).json({registered:true,registrationId,paymentStatus:"unpaid",message:"Your kickball team has reserved a spot. No payment is due today. The $350 team fee will be collected later."});
+  }
   const {data:registrationId,error:reserveError}=await db.rpc("reserve_tournament_team",{p_tournament_key:event.key,p_team_name:teamName.trim(),p_captain_name:captainName.trim(),p_captain_email:captainEmail.trim(),p_captain_phone:captainPhone||null});
   if(reserveError)return res.status(409).json({error:reserveError.message.includes("full")?"This tournament is full.":"Registration is not currently available."});
   const registration={id:registrationId};
